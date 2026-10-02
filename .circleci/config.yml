@@ -10,7 +10,7 @@ jobs:
           command: pip install -r requirements.txt
       - run:
           name: Run Tests
-          command: pytest # Replace with your testing framework command (e.g., npm test)
+          command: pytest github_api.py
 
 workflows:
   run-tests:
