@@ -30,11 +30,35 @@ def find_repos(id):
     return result_list
 
 class TestGithubAPI(unittest.TestCase):
-    def test_api(self):
+    @patch("requests.get")
+    def test_fetch_data_success(self, mock_get):
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        find_repos("mfriedma1-svg")
+        called_url = mock_get.call_args.kwargs.get('url')
+        url_list = called_url.split("/")
+        match url_list[-1]:
+            case "repos":
+                mock_dict = [{"name": "repo1"}, {"name": "repo2"}]
+                mock_response.json.return_value = mock_dict
+            case "commits":
+                mock_dict = [{"test": "test"}, {"test": "test"}]
+                mock_response.json.return_value = mock_dict
+        mock_get.return_value = mock_response
         result = find_repos("mfriedma1-svg")
-        self.assertEqual(result[0], "Repo: github-api; Number of commits: 1")
-        self.assertEqual(result[1], "Repo: helloworld; Number of commits: 1")
-        self.assertEqual(result[2], "Repo: triangles; Number of commits: 2")
+
+        self.assertEqual(result[0], "Repo: repo1; Number of commits: 2")
+        self.assertEqual(result[1], "Repo: repo2; Number of commits: 2")
+
+    @patch("requests.get")
+    def test_fetch_data_failure(self, mock_get):
+            mock_response = MagicMock()
+            mock_response.status_code = 403
+            mock_get.return_value = mock_response
+            result = find_repos("mfriedma1-svg")
+
+            self.assertEqual(result, "403 error, try again later.")
+
 
 if __name__ == '__main__':
     unittest.main()
